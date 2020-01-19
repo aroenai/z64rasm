@@ -2,7 +2,7 @@
 ; DPad Not-on-C-Buttons Fixes
 ;==================================================================================================
 
-.headersize (G_PLAYER_VRAM - G_PLAYER_FILE)
+.headersize (G_PLAYER_ACTOR_VRAM - G_PLAYER_ACTOR_FILE)
 
 ; Remove C button check for equipped mask, fixes using B button item (usually sword).
 ; Replaces:
@@ -42,14 +42,3 @@
 ;   jal     0x80118890
 .org 0x8012021C
     jal     draw_c_button_icons_color_fix
-
-;==================================================================================================
-; Underwater Ocarina
-;==================================================================================================
-
-; Replaces:
-;   andi    t7, a2, 0x00FF
-;   slti    at, t7, 0x0012
-.org 0x80110914
-    jal     underwater_ocarina_check
-    andi    t7, a2, 0x00FF

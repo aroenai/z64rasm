@@ -27,8 +27,12 @@
 .include "hooks/dpad.asm"
 .include "hooks/file_select.asm"
 .include "hooks/general.asm"
+.include "hooks/items.asm"
+.include "hooks/misc.asm"
 .include "hooks/pause.asm"
 .include "hooks/pushblock.asm"
+.include "hooks/quest_items.asm"
+.include "hooks/rooms.asm"
 
 ;==================================================================================================
 ; New code region
@@ -41,14 +45,18 @@
 PAYLOAD_START:
 
 .include "init.asm"
-.include "every_frame.asm"
 .include "colors.asm"
 .include "damage.asm"
 .include "dpad.asm"
 .include "file_select.asm"
+.include "items.asm"
+.include "misc.asm"
 .include "pause.asm"
+.include "player_actor.asm"
 .include "pushblock.asm"
-.include "underwater_ocarina.asm"
+.include "quest_items.asm"
+.include "rooms.asm"
+.include "song_of_time.asm"
 .importobj "../build/bundle.o"
 .align 8
 DPAD_TEXTURE:

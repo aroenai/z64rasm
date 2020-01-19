@@ -4,6 +4,8 @@
 #include "gfx.h"
 #include "hud_colors.h"
 #include "icetrap.h"
+#include "quest_items.h"
+#include "save_file.h"
 #include "util.h"
 #include "z2.h"
 
@@ -14,15 +16,17 @@ void c_init() {
     hud_colors_init();
 }
 
-//void before_game_state_update() {
-//}
+/**
+ * Hook function called after inventory & flags cleared via Song of Time.
+ **/
+void after_song_of_time_clear(z2_game_t *game) {
+    quest_items_after_song_of_time_clear();
+}
 
-//void after_game_state_update() {
-//}
-
-void before_non_menu_update(z2_link_t *link, z2_game_t *game) {
-    dpad_do_per_game_frame(link, game);
+void before_player_actor_update(z2_link_t *link, z2_game_t *game) {
+    dpad_before_player_actor_update(link, game);
     handle_external_effects(link, game);
+    save_file_init();
 }
 
 bool before_damage_process(z2_link_t *link, z2_game_t *game) {

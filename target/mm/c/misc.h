@@ -12,6 +12,12 @@ union hash {
     u8 full[0x10];
 };
 
+enum crit_wiggle_state {
+    CRIT_WIGGLE_DEFAULT,
+    CRIT_WIGGLE_ALWAYS_ON,
+    CRIT_WIGGLE_ALWAYS_OFF,
+};
+
 // Magic number for misc_config: "MISC"
 #define MISC_CONFIG_MAGIC 0x4D495343
 
@@ -21,14 +27,18 @@ struct misc_config {
     union hash hash;        /* 0x0008 */
     union {
         struct {
+            u32 crit_wiggle        : 2;
             u32 draw_hash          : 1;
             u32 fast_push          : 1;
             u32 ocarina_underwater : 1;
-            u32                    : 29;
+            u32 quest_item_storage : 1;
+            u32                    : 26;
         };
         u32 flags;          /* 0x0018 */
     };
 };                          /* 0x001C */
+
+extern struct misc_config MISC_CONFIG;
 
 bool misc_can_use_ocarina_underwater();
 struct misc_config* misc_get_config();

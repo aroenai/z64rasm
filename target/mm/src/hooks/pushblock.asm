@@ -2,7 +2,7 @@
 ; Pushblock Speed
 ;==================================================================================================
 
-.headersize(G_PUSHBLOCK_VRAM - G_PUSHBLOCK_FILE)
+.headersize(G_OBJ_OSHIHIKI_VRAM - G_OBJ_OSHIHIKI_FILE)
 
 ; Replaces:
 ;   sw      a1, 0x0004 (sp)
@@ -21,10 +21,10 @@
 ; Iceblock Push Speed
 ;==================================================================================================
 
-.headersize(G_ICEBLOCK_VRAM - G_ICEBLOCK_FILE)
+.headersize(G_OBJ_ICEBLOCK_VRAM - G_OBJ_ICEBLOCK_FILE)
 
 ; Actor: 0x143 (Obj_Iceblock)
-; Actor File VRAM: 0x80A13090
+; Actor File VRAM: 0x80A23090
 
 ; Replaces:
 ;   lui     at, 0x4060       ; Clamp constant
@@ -33,23 +33,16 @@
 ;   lwc1    f18, 0x707C (at) ; Additive velocity
 ;   lui     at, 0x80A2
 ;   lwc1    f6, 0x7080 (at)  ; Initial velocity
-.org 0x80A15E9C
+.org 0x80A25E9C
     or      a0, s0, r0
     jal     misc_get_iceblock_push_speed_hook
     lw      a1, 0x004C (sp)
-    mov.s   f12, f18
     nop
     nop
-
-; Just always use our returned value (additive velocity) for constant velocity.
-; This isn't implemented in the best way, maybe update later.
-; Replaces:
-;   mov.s   f0, f2
-.org 0x80A15EC8
-    mov.s   f0, f12
+    nop
 
 ; Remove relocations for hook.
-.org 0x80A173C4
+.org 0x80A273C4
 .area 0x10, 0
     .dw 0x00000000 ; Replaces: 0x45002E14
     .dw 0x00000000 ; Replaces: 0x46002E18
@@ -61,7 +54,7 @@
 ; Great Bay Temple Faucets
 ;==================================================================================================
 
-.headersize(G_FAUCET_VRAM - G_FAUCET_FILE)
+.headersize(G_BG_DBLUE_MOVEBG_VRAM - G_BG_DBLUE_MOVEBG_FILE)
 
 ; Actor: 0x174 (Bg_Dblue_Movebg)
 

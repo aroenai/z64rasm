@@ -15,7 +15,7 @@
 ; DPAD Handle (Safer)
 ;==================================================================================================
 
-.headersize (G_PLAYER_VRAM - G_PLAYER_FILE)
+.headersize (G_PLAYER_ACTOR_VRAM - G_PLAYER_ACTOR_FILE)
 
 ; Replaces:
 ;   sw      s0, 0x0030 (sp)
@@ -25,3 +25,14 @@
     sw      ra, 0x0034 (sp)
     jal     dpad_handle_hook
     sw      s0, 0x0030 (sp)
+
+;==================================================================================================
+; Transformation Mask Cutscene Skip
+;==================================================================================================
+
+; Replaces:
+;   lhu     v0, 0x000C (t8)
+;   andi    v0, v0, 0xC00F ; Input pad flags
+.org 0x808555F0 ; In RDRAM: 0x80772A80
+    jal     dpad_skip_transformation_check_hook
+    lhu     v0, 0x000C (t8)

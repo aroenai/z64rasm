@@ -229,27 +229,27 @@ typedef enum {
     Z2_SLOT_FIERCE_DEITY_MASK,
 } z2_mask_slot_t;
 
-typedef enum {
-    Z2_GAME_STATE_BLACK_SCREEN,
-    Z2_GAME_STATE_TRANSITION,
+enum z2_button_states {
+    Z2_BUTTONS_STATE_BLACK_SCREEN,
+    Z2_BUTTONS_STATE_TRANSITION,
     // Postman's timing game.
-    Z2_GAME_STATE_TRANSITION_2,
-    Z2_GAME_STATE_DIALOGUE = 5,
+    Z2_BUTTONS_STATE_TRANSITION_2,
+    Z2_BUTTONS_STATE_DIALOGUE = 5,
     // Used when on Epona sometimes, for example holding B (bow) while pressing A ("Return").
-    Z2_GAME_STATE_6 = 6,
-    Z2_GAME_STATE_PAUSE = 7,
-    Z2_GAME_STATE_ARCHERY_GAME = 8,
-    Z2_GAME_STATE_MINIGAME = 0xC,
-    Z2_GAME_STATE_SHOP = 0xF,
-    Z2_GAME_STATE_ITEM_PROMPT = 0x10,
+    Z2_BUTTONS_STATE_6 = 6,
+    Z2_BUTTONS_STATE_PAUSE = 7,
+    Z2_BUTTONS_STATE_ARCHERY_GAME = 8,
+    Z2_BUTTONS_STATE_MINIGAME = 0xC,
+    Z2_BUTTONS_STATE_SHOP = 0xF,
+    Z2_BUTTONS_STATE_ITEM_PROMPT = 0x10,
     // Boat cruise archery game.
-    Z2_GAME_STATE_BOAT_ARCHERY = 0x11,
+    Z2_BUTTONS_STATE_BOAT_ARCHERY = 0x11,
     // Honey & Darling minigame.
-    Z2_GAME_STATE_HONEY_DARLING = 0x14,
-    Z2_GAME_STATE_PICTOBOX = 0x15,
-    Z2_GAME_STATE_SWORDSMAN_GAME = 0x16,
-    Z2_GAME_STATE_NORMAL = 0x32,
-} z2_game_state_t;
+    Z2_BUTTONS_STATE_HONEY_DARLING = 0x14,
+    Z2_BUTTONS_STATE_PICTOBOX = 0x15,
+    Z2_BUTTONS_STATE_SWORDSMAN_GAME = 0x16,
+    Z2_BUTTONS_STATE_NORMAL = 0x32,
+};
 
 typedef enum {
     // NPC dialogue, get item, area transition, cutscene, form transition, using ocarina, etc.
@@ -379,9 +379,15 @@ typedef enum {
 
 typedef enum {
     // Item "pickup", such as a rupee, arrows, magic, deku stick, etc.
-    Z2_ACTOR_ID_PICKUP = 0xE,
+    Z2_ACTOR_EN_ITEM00 = 0xE,
     // Fairy.
-    Z2_ACTOR_ID_FAIRY = 0x10,
+    Z2_ACTOR_EN_ELF = 0x10,
+    // Gold skulltula token.
+    Z2_ACTOR_EN_SI = 0xE3,
+    // Stray fairy.
+    Z2_ACTOR_EN_ELFORG = 0x1B0,
+    // Stray fairy in bubble.
+    Z2_ACTOR_EN_ELFBUB = 0x1B1,
 } z2_actor_id_t;
 
 typedef enum {
@@ -605,6 +611,11 @@ typedef enum {
     // Honey & Darling game.
     Z2_TIMER_INDEX_HONEY_DARLING = 0x14,
 } z2_timer_index_t;
+
+enum z2_button_text {
+    Z2_BUTTON_TEXT_DECIDE = 6,
+    Z2_BUTTON_TEXT_INFO = 0x15,
+};
 
 /* Structure type aliases. */
 typedef struct z2_actor_s z2_actor_t;
@@ -1113,7 +1124,11 @@ typedef struct {
     u32              action_rom_addr;                /* 0x0184 */
     void            *action_ram;                     /* 0x0188 */
     u32              action_size;                    /* 0x018C */
-    u8               unk_0x190[0x96];                /* 0x0190 */
+    u8               unk_0x190[0x80];                /* 0x0190 */
+    s16              a_text_transition_timer;        /* 0x0210 */
+    u16              a_text_current;                 /* 0x0212 */
+    u16              a_text_transition;              /* 0x0214 */
+    u8               unk_0x216[0x10];                /* 0x0216 */
     u16              heartbeat_timer;                /* 0x0226 */
     u16              heartbeat_mode;                 /* 0x0228 */
     z2_color_rgb16_t heartbeat_inner_rgb;            /* 0x022A */
@@ -1144,6 +1159,16 @@ typedef struct {
 /// Pause Context
 /// =============================================================
 
+typedef union {
+    struct {
+        u16          item;
+        u16          map;
+        u16          quest;
+        u16          mask;
+    };
+    u16              cells[0x04];                    /* 0x0000 */
+} z2_pause_cells_t;                                  /* 0x0008 */
+
 typedef struct {
     z2_view_t        view;                           /* 0x0000 */
     void            *icon_item_static;               /* 0x0168 */
@@ -1163,7 +1188,9 @@ typedef struct {
     u16              screen_idx;                     /* 0x0204 */
     u8               unk_0x206[0x1E];                /* 0x0206 */
     u16              item_alpha;                     /* 0x0224 */
-    u8               unk_0x226[0x1C];                /* 0x0226 */
+    u8               unk_0x226[0x12];                /* 0x0226 */
+    z2_pause_cells_t cells_1;                        /* 0x0238 */
+    u8               unk_0x240[0x02];                /* 0x0240 */
     u16              item_x;                         /* 0x0242 */
     u8               unk_0x244[0x04];                /* 0x0244 */
     u16              mask_x;                         /* 0x0248 */
@@ -1171,17 +1198,16 @@ typedef struct {
     u16              item_y;                         /* 0x024C */
     u8               unk_0x24E[0x04];                /* 0x024E */
     u16              mask_y;                         /* 0x0252 */
-    u8               unk_0x254[0x08];                /* 0x0254 */
+    u8               unk_0x254[0x04];                /* 0x0254 */
+    s16              side_button;                    /* 0x0258 */
+    u8               unk_0x25A[0x02];                /* 0x025A */
     u16              selected_item;                  /* 0x025C */
     u16              item_item;                      /* 0x025E */
     u16              map_item;                       /* 0x0260 */
     u16              quest_item;                     /* 0x0262 */
     u16              mask_item;                      /* 0x0264 */
     u16              unk_0x266;                      /* 0x0266 */
-    u16              item_cell;                      /* 0x0268 */
-    u16              map_cell;                       /* 0x026A */
-    u16              quest_cell;                     /* 0x026C */
-    u16              mask_cell;                      /* 0x026E */
+    z2_pause_cells_t cells_2;                        /* 0x0268 */
 } z2_pause_ctxt_t;                                   /* 0x0270 */
 
 /// =============================================================
@@ -1348,7 +1374,9 @@ struct z2_game_s {
     s8               cutscene_state;                 /* 0x01F2C */
     u8               unk_0x1F2D[0x148DB];            /* 0x01F2D */
     z2_song_ctxt_t  *song_ctxt;                      /* 0x16808 */
-    u8               unk_0x1680C[0x1E];              /* 0x1680C */
+    u8               unk_0x1680C[0x0C];              /* 0x1680C */
+    u32              unk_0x16818;                    /* 0x16818 */
+    u8               unk_0x1681C[0x0E];              /* 0x1681C */
     u8               message_state_1;                /* 0x1682A */
     u8               unk_0x1682B[0xFD];              /* 0x1682B */
     u8               message_state_2;                /* 0x16928 */
@@ -1373,6 +1401,13 @@ struct z2_game_s {
 /// =============================================================
 /// Savefile Structure
 /// =============================================================
+
+typedef struct {
+    u16              transition_state;               /* 0x0000 */
+    u16              state;                          /* 0x0002 */
+    u16              alpha_transition;               /* 0x0004 */
+    u16              previous_state;                 /* 0x0006 */
+} z2_buttons_state_t;                                /* 0x0008 */
 
 /**
  * Scene flags, stored in z2_file_t.
@@ -1590,10 +1625,7 @@ typedef struct {
     u8               unk_0x3E10[0x108];              /* 0x3E10‬ */
     u8               buttons_usable[0x05];           /* 0x3F18, B, C-left, C-down, C-right, A buttons. */
     u8               unk_0x3F1D[0x03];               /* 0x3F1D */
-    u16              pre_game_state;                 /* 0x3F20, game state in relation to alpha transition? */
-    u16              game_state;                     /* 0x3F22 */
-    u16              alpha_transition;               /* 0x3F24 */
-    u16              sub_game_state;                 /* 0x3F26, might be "previous" game state but not sure. */
+    z2_buttons_state_t buttons_state;                /* 0x3F20 */
     u8               unk_0x3F28[0x06];               /* 0x3F28 */
     u16              magic_meter_size;               /* 0x3F2E */
     u8               unk_0x3F30[0x38];               /* 0x3F30 */
@@ -2003,13 +2035,23 @@ typedef struct {
 #define z2_LoadFile_addr                 0x80080A08
 #define z2_ReadFile_addr                 0x80080C90
 #define z2_LoadFileFromArchive_addr      0x80178DAC
+#define z2_LoadVFileFromArchive_addr     0x80178E3C
 
 /* Function Addresses (Get Item) */
 #define z2_SetGetItem_addr               0x800B8A1C
 
+/* Function Addresses (HUD) */
+#define z2_UpdateButtonsState_addr       0x8010EF68
+#define z2_ReloadButtonTexture_addr      0x80112B40
+#define z2_HudSetAButtonText_addr        0x8011552C
+
 /* Function Addresses (RNG) */
 #define z2_RngInt_addr                   0x80086FA0
 #define z2_RngSetSeed_addr               0x80086FD0
+
+/* Function Addresses (Rooms) */
+#define z2_LoadRoom_addr                 0x8012E96C
+#define z2_UnloadRoom_addr               0x8012EBF8
 
 /* Relocatable Functions (Pause Menu) */
 #define z2_PauseDrawItemIcon_vram        0x80821AD4
@@ -2044,11 +2086,17 @@ typedef s16 (*z2_GetFileNumber_proc)(u32 vrom_addr);
 typedef u32 (*z2_GetFilePhysAddr_proc)(u32 vrom_addr);
 typedef z2_file_table_t* (*z2_GetFileTable_proc)(u32 vrom_addr);
 typedef void (*z2_LoadFile_proc)(z2_loadfile_t *loadfile);
-typedef void (*z2_LoadFileFromArchive_proc)(u32 phys_file, u8 item, u8 *dest, u32 length);
+typedef void (*z2_LoadFileFromArchive_proc)(u32 phys_file, u8 index, u8 *dest, u32 length);
+typedef void (*z2_LoadVFileFromArchive_proc)(u32 virt_file, u8 index, u8 *dest, u32 length);
 typedef void (*z2_ReadFile_proc)(void *mem_addr, u32 vrom_addr, u32 size);
 
 /* Function Prototypes (Get Item) */
 typedef void (*z2_SetGetItem_proc)(z2_actor_t *actor, z2_game_t *game, s32 unk2, u32 unk3);
+
+/* Function Prototypes (HUD) */
+typedef void (*z2_HudSetAButtonText_proc)(z2_game_t *game, u16 text_id);
+typedef void (*z2_ReloadButtonTexture_proc)(z2_game_t *game, u8 idx);
+typedef void (*z2_UpdateButtonsState_proc)(u32 state);
 
 /* Function Prototypes (Pause Menu) */
 typedef void (*z2_PauseDrawItemIcon_proc)(z2_gfx_t *gfx, u32 seg_addr, u16 width, u16 height, u16 quad_vtx_idx);
@@ -2056,6 +2104,10 @@ typedef void (*z2_PauseDrawItemIcon_proc)(z2_gfx_t *gfx, u32 seg_addr, u16 width
 /* Function Prototypes (RNG) */
 typedef u32 (*z2_RngInt_proc)();
 typedef void (*z2_RngSetSeed_proc)(u32 seed);
+
+/* Function Prototypes (Rooms) */
+typedef void (*z2_LoadRoom_proc)(z2_game_t *game, z2_room_ctxt_t *room_ctxt, uint8_t room_id);
+typedef void (*z2_UnloadRoom_proc)(z2_game_t *game, z2_room_ctxt_t *room_ctxt);
 
 /* Functions */
 #define z2_CanInteract                   ((z2_CanInteract_proc)           z2_CanInteract_addr)
@@ -2076,13 +2128,23 @@ typedef void (*z2_RngSetSeed_proc)(u32 seed);
 #define z2_GetFileTable                  ((z2_GetFileTable_proc)          z2_GetFileTable_addr)
 #define z2_LoadFile                      ((z2_LoadFile_proc)              z2_LoadFile_addr)
 #define z2_LoadFileFromArchive           ((z2_LoadFileFromArchive_proc)   z2_LoadFileFromArchive_addr)
+#define z2_LoadVFileFromArchive          ((z2_LoadVFileFromArchive_proc)  z2_LoadVFileFromArchive_addr)
 #define z2_ReadFile                      ((z2_ReadFile_proc)              z2_ReadFile_addr)
 
 /* Functions (Get Item) */
 #define z2_SetGetItem                    ((z2_SetGetItem_proc)            z2_SetGetItem_addr)
 
+/* Functions (HUD) */
+#define z2_HudSetAButtonText             ((z2_HudSetAButtonText_proc)     z2_HudSetAButtonText_addr)
+#define z2_ReloadButtonTexture           ((z2_ReloadButtonTexture_proc)   z2_ReloadButtonTexture_addr)
+#define z2_UpdateButtonsState            ((z2_UpdateButtonsState_proc)    z2_UpdateButtonsState_addr)
+
 /* Functions (RNG) */
 #define z2_RngInt                        ((z2_RngInt_proc)                z2_RngInt_addr)
 #define z2_RngSetSeed                    ((z2_RngSetSeed_proc)            z2_RngSetSeed_addr)
+
+/* Functions (Rooms) */
+#define z2_LoadRoom                      ((z2_LoadRoom_proc)              z2_LoadRoom_addr)
+#define z2_UnloadRoom                    ((z2_UnloadRoom_proc)            z2_UnloadRoom_addr)
 
 #endif // Z2_H
